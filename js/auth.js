@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sessionStorage.setItem('username', username);
 
         // Redirect to patient details page
-        window.location.href = 'patient-details.html';
+        window.location.href = '/dashboard_screen/dashboard.html';
       }
     });
   }

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Consultation Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <h1 class="header-title">Medical Consultation Documentation Assistant</h1>
+            <div class="header-right">
+                <div class="doctor-info">
+                    <div class="avatar-circle">JD</div>
+                    <div class="doctor-details">
+                        <div class="doctor-name">Dr. Jane Doe</div>
+                        <div class="doctor-title">MD</div>
+                    </div>
+                </div>
+                <button class="logout-btn">Log Out</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Title and Search -->
+        <div class="content-header">
+            <h2 class="page-title">Today's Consultations</h2>
+            <div class="search-container">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <input type="text" class="search-input" placeholder="Search patients..." id="searchInput">
+            </div>
+        </div>
+
+        <!-- Patient List -->
+        <div class="patient-list" id="patientList">
+            <!-- Patient Card 1 -->
+            <div class="patient-card" data-name="John Smith" data-mrn="123456">
+                <div class="patient-left">
+                    <div class="patient-avatar avatar-blue">JS</div>
+                    <div class="patient-info">
+                        <h3 class="patient-name">John Smith</h3>
+                        <div class="patient-details">
+                            <div>DOB: 01/15/1985, MRN: 123456</div>
+                            <div>Visit: Oct 26, 2023, 10:00 AM</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="patient-right">
+                    <span class="status-badge status-waiting">Waiting</span>
+                    <button class="action-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </button>
+                    <button class="action-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Patient Card 2 -->
+            <div class="patient-card" data-name="Emily Johnson" data-mrn="789012">
+                <div class="patient-left">
+                    <div class="patient-avatar avatar-pink">EJ</div>
+                    <div class="patient-info">
+                        <h3 class="patient-name">Emily Johnson</h3>
+                        <div class="patient-details">
+                            <div>DOB: 05/22/1992, MRN: 789012</div>
+                            <div>Visit: Oct 26, 2023, 10:30 AM</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="patient-right">
+                    <span class="status-badge status-progress">In Progress</span>
+                    <button class="action-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </button>
+                    <button class="action-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Patient Card 3 -->
+            <div class="patient-card" data-name="Michael Brown" data-mrn="345678">
+                <div class="patient-left">
+                    <div class="patient-avatar avatar-purple">MB</div>
+                    <div class="patient-info">
+                        <h3 class="patient-name">Michael Brown</h3>
+                        <div class="patient-details">
+                            <div>DOB: 09/03/1978, MRN: 345678</div>
+                            <div>Visit: Oct 26, 2023, 11:00 AM</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="patient-right">
+                    <span class="status-badge status-review">Review Needed</span>
+                    <button class="action-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </button>
+                    <button class="action-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Patient Card 4 -->
+            <div class="patient-card" data-name="Sarah Davis" data-mrn="901234">
+                <div class="patient-left">
+                    <div class="patient-avatar avatar-green">SD</div>
+                    <div class="patient-info">
+                        <h3 class="patient-name">Sarah Davis</h3>
+                        <div class="patient-details">
+                            <div>DOB: 12/12/2001, MRN: 901234</div>
+                            <div>Visit: Oct 26, 2023, 11:30 AM</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="patient-right">
+                    <span class="status-badge status-complete">Complete</span>
+                    <button class="action-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </button>
+                    <button class="action-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Results Message -->
+        <div class="no-results" id="noResults" style="display: none;">
+            <p>No patients found matching your search.</p>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
