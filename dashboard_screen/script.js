@@ -2,7 +2,7 @@
 const searchInput = document.getElementById('searchInput');
 const patientCards = document.querySelectorAll('.patient-card');
 const noResults = document.getElementById('noResults');
-
+//asdasd
 searchInput.addEventListener('input', function() {
     const searchTerm = this.value.toLowerCase().trim();
     let visibleCount = 0;
