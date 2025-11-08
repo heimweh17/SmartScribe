@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UF Health SmartScribe - Sign Up</title>
+  <link rel="stylesheet" href="css/signup.css">
+</head>
+<body>
+  <div class="signup-container">
+    <div class="signup-card">
+      <!-- UF Health SmartScribe Logo -->
+      <div class="brand-logo">
+        <div class="logo-box">UF</div>
+        <div class="brand-name">Health SmartScribe</div>
+      </div>
+
+      <!-- Title -->
+      <h1 class="app-title">Medical Consultation<br>Documentation Assistant</h1>
+
+      <!-- Sign Up Section -->
+      <h2 class="signup-title">Create Account</h2>
+
+      <!-- Signup Form -->
+      <form id="signupForm" class="signup-form">
+        <!-- Full Name Field -->
+        <div class="form-group">
+          <label for="fullName">Full Name</label>
+          <input
+            type="text"
+            id="fullName"
+            name="fullName"
+            placeholder="Enter your full name"
+            required
+            autocomplete="name"
+          >
+        </div>
+
+        <!-- Email Field -->
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Enter your email"
+            required
+            autocomplete="email"
+          >
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="password-input-wrapper">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Enter your password (min 6 characters)"
+              required
+              autocomplete="new-password"
+              minlength="6"
+            >
+            <button type="button" class="toggle-password" aria-label="Toggle password visibility">
+              <svg class="eye-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 5C7 5 2.73 8.11 1 12.5C2.73 16.89 7 20 12 20C17 20 21.27 16.89 23 12.5C21.27 8.11 17 5 12 5Z" stroke="currentColor" stroke-width="2"/>
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                <line class="eye-slash" x1="4" y1="4" x2="20" y2="20" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </button>
+          </div>
+          <div class="password-hint">Password must be at least 6 characters long</div>
+        </div>
+
+        <!-- Confirm Password Field -->
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <div class="password-input-wrapper">
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              placeholder="Re-enter your password"
+              required
+              autocomplete="new-password"
+              minlength="6"
+            >
+            <button type="button" class="toggle-password-confirm" aria-label="Toggle password visibility">
+              <svg class="eye-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 5C7 5 2.73 8.11 1 12.5C2.73 16.89 7 20 12 20C17 20 21.27 16.89 23 12.5C21.27 8.11 17 5 12 5Z" stroke="currentColor" stroke-width="2"/>
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                <line class="eye-slash" x1="4" y1="4" x2="20" y2="20" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sign Up Button -->
+        <button type="submit" class="signup-button">Create Account</button>
+
+        <!-- Login Link -->
+        <p class="login-text">
+          Already have an account? <a href="index.html" class="login-link">Sign In</a>
+        </p>
+      </form>
+    </div>
+
+    <!-- HIPAA Compliance Footer -->
+    <footer class="hipaa-footer">
+      HIPAA Compliant Application
+    </footer>
+  </div>
+
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase Configuration -->
+  <script src="js/supabase.js"></script>
+  <!-- Signup Logic -->
+  <script src="js/signup.js"></script>
+</body>
+</html>

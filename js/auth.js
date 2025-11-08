@@ -164,44 +164,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
   }
 
-  // Sign up link handler
+  // Sign up link handler - redirect to signup page
   const signupLink = document.querySelector('.signup-link');
 
   if (signupLink) {
-    signupLink.addEventListener('click', async function(e) {
+    signupLink.addEventListener('click', function(e) {
       e.preventDefault();
-
-      const email = prompt('Enter your email address:');
-      const password = prompt('Enter your password (min 6 characters):');
-
-      if (!email || !password) {
-        return;
-      }
-
-      if (password.length < 6) {
-        showError('Password must be at least 6 characters long.');
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase.auth.signUp({
-          email: email,
-          password: password,
-        });
-
-        if (error) {
-          throw error;
-        }
-
-        alert('Sign up successful! Please check your email to confirm your account.');
-      } catch (error) {
-        console.error('Sign up error:', error);
-        if (error.message.includes('already registered')) {
-          showError('This email is already registered. Please login instead.');
-        } else {
-          showError('Failed to create account. Please try again.');
-        }
-      }
+      window.location.href = 'signup.html';
     });
   }
 
