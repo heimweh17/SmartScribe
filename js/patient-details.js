@@ -12,270 +12,331 @@ function addChip(text) {
   const ta = document.getElementById('quick-notes');
   ta.value = (ta.value ? ta.value + '\n' : '') + `• ${text}`;
 }
+
 // Get patient info from URL parameters
 function getPatientFromURL() {
-    const urlParams = new URLSearchParams(window.location.search);
-    return {
-        name: urlParams.get('name'),
-        mrn: urlParams.get('mrn')
-    };
+  const urlParams = new URLSearchParams(window.location.search);
+  return {
+    name: urlParams.get('name'),
+    mrn: urlParams.get('mrn')
+  };
 }
 
 // Update patient display
 function displayPatientInfo() {
-    const patient = getPatientFromURL();
-    
-    if (patient.name && patient.mrn) {
-        // Update patient card in sidebar
-        document.querySelector('.patient-card .name').textContent = patient.name;
-        document.querySelector('.patient-card .mrn').textContent = `MRN: ${patient.mrn}`;
-        
-        // Update avatar initials
-        const initials = patient.name.split(' ').map(n => n[0]).join('');
-        document.querySelector('.patient-card .avatar').textContent = initials;
-    }
-}
-
-// Call on page load
-displayPatientInfo();
-// Fetch dynamic fields from backend
-async function updateDynamic() {
-  const chief = document.getElementById('chief').value;
-  const container = document.getElementById('dynamic');
-  container.innerHTML = '';
-
-  if (!chief) return;
-
-  try {
-    // Call backend to get template fields
-    const response = await fetch(`${API_BASE}/templates/${chief}`);
-    const fields = await response.json();
-
-    // Create form fields dynamically
-    fields.forEach(f => {
-      const wrap = document.createElement('div');
-      wrap.className = 'form-row';
-      
-      const label = document.createElement('label');
-      label.setAttribute('for', f.id);
-      label.textContent = f.label;
-      
-      const input = document.createElement('input');
-      input.id = f.id;
-      input.type = 'text';
-      input.placeholder = f.placeholder || `Enter ${f.label.toLowerCase()}...`;
-      
-      wrap.appendChild(label);
-      wrap.appendChild(input);
-      container.appendChild(wrap);
-    });
-
-    // Get AI suggestions for this chief complaint
-    fetchSuggestions(chief);
-
-  } catch (error) {
-    console.error('Error fetching template:', error);
-  }
-}
-
-// Fetch AI suggestions
-async function fetchSuggestions(context) {
-  try {
-    const response = await fetch(`${API_BASE}/suggest?context=${context}`);
-    const data = await response.json();
-    
-    if (data.suggestions && data.suggestions.length > 0) {
-      updateSmartSuggestion(data.suggestions[0]);
-    }
-  } catch (error) {
-    console.error('Error fetching suggestions:', error);
-  }
-}
-
-// Update the smart suggestion box
-function updateSmartSuggestion(suggestion) {
-  const smartText = document.querySelector('.smart-text');
-  const addButton = document.querySelector('.smart .btn.accent');
+  const patient = getPatientFromURL();
   
-  smartText.textContent = suggestion;
-  addButton.onclick = () => appendToPlan(suggestion);
+  if (patient.name && patient.mrn) {
+    // Update patient card in sidebar
+    const nameEl = document.querySelector('.patient-card .name');
+    const mrnEl = document.querySelector('.patient-card .mrn');
+    const avatarEl = document.querySelector('.patient-card .avatar');
+    
+    if (nameEl) nameEl.textContent = patient.name;
+    if (mrnEl) mrnEl.textContent = `MRN: ${patient.mrn}`;
+    
+    // Update avatar initials
+    if (avatarEl) {
+      const initials = patient.name.split(' ').map(n => n[0]).join('');
+      avatarEl.textContent = initials;
+    }
+  }
 }
 
-// Generate SOAP note by calling backend
-async function generateSOAP(e) {
-  e.preventDefault();
+// ==========================================
+// TRANSCRIPTION INTEGRATION
+// ==========================================
 
-  const chief = document.getElementById('chief').value;
-  const hpi = document.getElementById('hpi').value.trim();
-  const assessment = document.getElementById('assessment').value.trim();
-  const plan = document.getElementById('plan').value.trim();
+let transcription = null;
+let isRecording = false;
+let durationInterval = null;
 
-  // Collect dynamic field data
-  const dynamicFields = [];
-  const dynInputs = document.getElementById('dynamic').querySelectorAll('input');
-  dynInputs.forEach(inp => {
-    if (inp.value.trim()) {
-      dynamicFields.push({
-        label: inp.previousSibling.textContent,
-        value: inp.value.trim()
+// Initialize transcription system
+function initializeTranscription() {
+  // Check if transcription elements exist
+  const startBtn = document.getElementById('start-recording');
+  const stopBtn = document.getElementById('stop-recording');
+  const clearBtn = document.getElementById('clear-transcript');
+  const exportBtn = document.getElementById('export-transcript');
+  
+  if (!startBtn) {
+    console.warn('Transcription buttons not found - skipping transcription setup');
+    return;
+  }
+
+  // Check if MedicalTranscription class exists
+  if (typeof MedicalTranscription === 'undefined') {
+    console.error('MedicalTranscription class not loaded');
+    return;
+  }
+
+  // Create transcription instance
+  transcription = new MedicalTranscription();
+  console.log('✅ Transcription system initialized');
+
+  // Start Recording Button
+  startBtn.addEventListener('click', async () => {
+    try {
+      console.log('Starting recording...');
+      
+      await transcription.start((segment) => {
+        if (segment.isFinal) {
+          addMessageToChat(segment);
+        } else {
+          showTypingPreview(segment);
+        }
       });
+
+      // Update UI
+      isRecording = true;
+      startBtn.style.display = 'none';
+      stopBtn.style.display = 'inline-block';
+      clearBtn.style.display = 'inline-block';
+      exportBtn.style.display = 'inline-block';
+      document.getElementById('recording-duration').style.display = 'inline';
+
+      // Clear the initial message
+      const chatContainer = document.getElementById('chat-container');
+      if (chatContainer.querySelector('p')) {
+        chatContainer.innerHTML = '';
+      }
+
+      // Start duration counter
+      startDurationCounter();
+      showNotification('🎙️ Recording started', 'success');
+      
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      
+      if (error.message.includes('Permission denied') || error.message.includes('NotAllowedError')) {
+        showNotification('❌ Please allow microphone access', 'error');
+      } else if (error.message.includes('NotFoundError')) {
+        showNotification('❌ No microphone found', 'error');
+      } else {
+        showNotification('❌ Failed to start: ' + error.message, 'error');
+      }
     }
   });
 
-  // Build payload for backend
-  const payload = {
-    patient: {
-      name: 'Annalise Keating', // Could be dynamic from form
-      mrn: '987654321',
-      dob: '1975-08-21'
-    },
-    chiefComplaint: chief,
-    hpi: hpi,
-    dynamicFields: dynamicFields,
-    assessment: assessment,
-    plan: plan,
-    vitals: {
-      bp: '120/80 mmHg',
-      hr: '72 bpm', 
-      temp: '98.6°F',
-      o2: '98%'
+  // Stop Recording Button
+  stopBtn.addEventListener('click', async () => {
+    await stopRecording();
+  });
+
+  // Clear Transcript Button
+  clearBtn.addEventListener('click', () => {
+    if (confirm('Are you sure you want to clear the transcript?')) {
+      clearTranscript();
     }
-  };
+  });
+
+  // Export Transcript Button
+  exportBtn.addEventListener('click', () => {
+    exportTranscript();
+  });
+}
+
+// Stop recording
+async function stopRecording() {
+  if (!isRecording) return;
 
   try {
-    // Call backend to generate SOAP
-    const response = await fetch(`${API_BASE}/notes`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload)
-    });
+    console.log('Stopping recording...');
+    await transcription.stop();
 
-    const data = await response.json();
-
-    if (data.ok) {
-      // Update the SOAP preview with backend response
-      document.getElementById('soap-subjective').textContent = data.soap.subjective;
-      document.getElementById('soap-objective').textContent = data.soap.objective;
-      document.getElementById('soap-assessment').textContent = data.soap.assessment;
-      document.getElementById('soap-plan').textContent = data.soap.plan;
-
-      // Show success message
-      showNotification('SOAP note generated successfully!', 'success');
-    } else {
-      showNotification('Error generating SOAP note', 'error');
+    // Update UI
+    isRecording = false;
+    document.getElementById('start-recording').style.display = 'inline-block';
+    document.getElementById('stop-recording').style.display = 'none';
+    document.getElementById('recording-duration').style.display = 'none';
+    
+    // Stop duration counter
+    if (durationInterval) {
+      clearInterval(durationInterval);
+      durationInterval = null;
     }
 
+    // Clear typing preview
+    const preview = document.getElementById('typing-preview');
+    if (preview) preview.textContent = '';
+
+    // Get final transcript
+    const finalTranscript = transcription.getTranscript();
+    console.log('Recording stopped. Total segments:', finalTranscript.length);
+
+    // Save to backend if available
+    if (finalTranscript.length > 0) {
+      await saveTranscriptToBackend(finalTranscript);
+    }
+
+    showNotification('⏹️ Recording stopped', 'success');
+
   } catch (error) {
-    console.error('Error calling backend:', error);
-    showNotification('Failed to connect to backend', 'error');
+    console.error('Error stopping recording:', error);
+    showNotification('❌ Error stopping recording', 'error');
   }
 }
 
-// ICD-10 search with autocomplete
-let searchTimeout;
-function setupICD10Search() {
-  const assessmentField = document.getElementById('assessment');
+// Add message to chat UI
+function addMessageToChat(segment) {
+  const chatContainer = document.getElementById('chat-container');
+  if (!chatContainer) return;
   
-  assessmentField.addEventListener('input', (e) => {
-    clearTimeout(searchTimeout);
-    const query = e.target.value.trim();
-    
-    if (query.length < 2) return;
-    
-    searchTimeout = setTimeout(async () => {
-      try {
-        const response = await fetch(`${API_BASE}/icd10?q=${encodeURIComponent(query)}`);
-        const results = await response.json();
-        showSearchResults(results, assessmentField);
-      } catch (error) {
-        console.error('Error searching ICD-10:', error);
-      }
-    }, 300);
-  });
-}
-
-// Show search results dropdown
-function showSearchResults(results, inputField) {
-  // Remove existing dropdown
-  const existing = document.querySelector('.search-dropdown');
-  if (existing) existing.remove();
-
-  if (results.length === 0) return;
-
-  const dropdown = document.createElement('div');
-  dropdown.className = 'search-dropdown';
-  dropdown.style.cssText = `
-    position: absolute;
-    background: var(--card);
-    border: 1px solid var(--border);
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `transcript-message ${segment.speaker.toLowerCase()}`;
+  messageDiv.style.cssText = `
+    margin-bottom: 12px;
+    padding: 12px;
     border-radius: 8px;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 1000;
-    width: ${inputField.offsetWidth}px;
-    margin-top: 4px;
+    background: ${segment.speaker === 'Doctor' ? 'rgba(0, 33, 165, 0.1)' : 'rgba(250, 70, 22, 0.1)'};
+    border-left: 3px solid ${segment.speaker === 'Doctor' ? '#0021A5' : '#FA4616'};
+    animation: slideIn 0.3s ease-out;
   `;
 
-  results.forEach(result => {
-    const item = document.createElement('div');
-    item.style.cssText = `
-      padding: 8px 12px;
-      cursor: pointer;
-      border-bottom: 1px solid var(--border);
-    `;
-    item.textContent = `${result.code} - ${result.name}`;
-    
-    item.addEventListener('click', () => {
-      inputField.value = `${result.code} - ${result.name}`;
-      dropdown.remove();
-    });
-    
-    item.addEventListener('mouseenter', () => {
-      item.style.backgroundColor = 'var(--uf-blue-700)';
-    });
-    
-    item.addEventListener('mouseleave', () => {
-      item.style.backgroundColor = 'transparent';
-    });
+  messageDiv.innerHTML = `
+    <div style="display: flex; justify-content: space-between; margin-bottom: 6px; align-items: center;">
+      <strong style="color: ${segment.speaker === 'Doctor' ? '#0021A5' : '#FA4616'}; font-size: 0.95em;">
+        ${segment.speaker}
+      </strong>
+      <span style="color: #888; font-size: 0.85em;">
+        ${segment.timestamp}
+      </span>
+    </div>
+    <div style="color: white; line-height: 1.5;">
+      ${segment.text}
+    </div>
+  `;
 
-    dropdown.appendChild(item);
-  });
+  chatContainer.appendChild(messageDiv);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
 
-  // Position dropdown
-  const rect = inputField.getBoundingClientRect();
-  dropdown.style.left = rect.left + 'px';
-  dropdown.style.top = (rect.bottom + window.scrollY) + 'px';
+// Show typing preview
+function showTypingPreview(segment) {
+  const preview = document.getElementById('typing-preview');
+  if (!preview) return;
   
-  document.body.appendChild(dropdown);
+  preview.innerHTML = `
+    <span style="color: ${segment.speaker === 'Doctor' ? '#0021A5' : '#FA4616'};">
+      ${segment.speaker}
+    </span> is speaking: <span style="opacity: 0.7;">${segment.text}...</span>
+  `;
+}
 
-  // Close dropdown when clicking outside
-  setTimeout(() => {
-    document.addEventListener('click', function closeDropdown(e) {
-      if (!dropdown.contains(e.target) && e.target !== inputField) {
-        dropdown.remove();
-        document.removeEventListener('click', closeDropdown);
-      }
+// Start duration counter
+function startDurationCounter() {
+  const durationDisplay = document.getElementById('recording-duration');
+  if (!durationDisplay) return;
+  
+  durationInterval = setInterval(() => {
+    if (transcription && isRecording) {
+      durationDisplay.textContent = transcription.getFormattedDuration();
+    }
+  }, 1000);
+}
+
+// Clear transcript
+function clearTranscript() {
+  const chatContainer = document.getElementById('chat-container');
+  if (!chatContainer) return;
+  
+  chatContainer.innerHTML = `
+    <p style="color: var(--text-secondary); text-align: center; padding: 20px;">
+      Click "Start Recording" to begin transcription
+    </p>
+  `;
+  
+  if (transcription) {
+    transcription.clearTranscript();
+  }
+  
+  const preview = document.getElementById('typing-preview');
+  if (preview) preview.textContent = '';
+  
+  const clearBtn = document.getElementById('clear-transcript');
+  const exportBtn = document.getElementById('export-transcript');
+  if (clearBtn) clearBtn.style.display = 'none';
+  if (exportBtn) exportBtn.style.display = 'none';
+  
+  showNotification('Transcript cleared', 'success');
+}
+
+// Export transcript
+function exportTranscript() {
+  if (!transcription) return;
+  
+  const patient = getPatientFromURL();
+  const transcript = transcription.getFormattedTranscript();
+  
+  if (!transcript || transcript.trim() === '') {
+    showNotification('No transcript to export', 'error');
+    return;
+  }
+  
+  const content = `
+UF Health SmartScribe - Consultation Transcript
+==============================================
+
+Patient: ${patient.name || 'Unknown'}
+MRN: ${patient.mrn || 'Unknown'}
+Date: ${new Date().toLocaleDateString()}
+Time: ${new Date().toLocaleTimeString()}
+Duration: ${transcription.getFormattedDuration()}
+
+Transcript:
+-----------
+
+${transcript}
+
+==============================================
+Generated by UF Health SmartScribe
+`;
+  
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `transcript-${patient.mrn || 'unknown'}-${Date.now()}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  
+  URL.revokeObjectURL(url);
+  showNotification('📄 Transcript exported', 'success');
+}
+
+// Save transcript to backend
+async function saveTranscriptToBackend(transcript) {
+  const patient = getPatientFromURL();
+  
+  if (!patient.mrn) {
+    console.warn('No patient MRN - skipping backend save');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/transcripts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        patient_mrn: patient.mrn,
+        patient_name: patient.name,
+        transcript: transcript,
+        duration_seconds: transcription.getDuration() / 1000,
+        recorded_at: new Date().toISOString()
+      })
     });
-  }, 100);
+
+    if (response.ok) {
+      console.log('✅ Transcript saved to backend');
+    }
+  } catch (error) {
+    console.error('Error saving transcript:', error);
+  }
 }
 
-// Utility functions
-function clearForm() {
-  document.getElementById('doc-form').reset();
-  document.getElementById('dynamic').innerHTML = '';
-  document.getElementById('soap-subjective').textContent = '—';
-  document.getElementById('soap-objective').textContent = 'Vitals reviewed; exam to be documented.';
-  document.getElementById('soap-assessment').textContent = '—';
-  document.getElementById('soap-plan').textContent = '—';
-}
-
-function appendToPlan(text) {
-  const plan = document.getElementById('plan');
-  plan.value = plan.value ? plan.value + '\n' + text : text;
-}
-
+// Show notification
 function showNotification(message, type = 'info') {
   const notification = document.createElement('div');
   notification.style.cssText = `
@@ -286,7 +347,9 @@ function showNotification(message, type = 'info') {
     border-radius: 8px;
     color: white;
     z-index: 2000;
-    background: ${type === 'success' ? 'var(--teal)' : type === 'error' ? 'var(--uf-orange)' : 'var(--uf-blue)'};
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    background: ${type === 'success' ? '#48bb78' : type === 'error' ? '#FA4616' : '#0021A5'};
   `;
   notification.textContent = message;
   document.body.appendChild(notification);
@@ -296,20 +359,18 @@ function showNotification(message, type = 'info') {
   }, 3000);
 }
 
-// Initialize when page loads
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-  setupICD10Search();
+  console.log('🚀 Initializing patient details page...');
   
-  // Test backend connection
-  fetch(`${API_BASE}/health`)
-    .then(response => response.json())
-    .then(data => {
-      if (data.ok) {
-        showNotification('Connected to UF SmartScribe API', 'success');
-      }
-    })
-    .catch(error => {
-      showNotification('Failed to connect to backend', 'error');
-      console.error('Backend connection error:', error);
-    });
+  displayPatientInfo();
+  initializeTranscription();
+});
+
+// Warn before leaving if recording
+window.addEventListener('beforeunload', (e) => {
+  if (isRecording) {
+    e.preventDefault();
+    e.returnValue = 'Recording in progress. Are you sure you want to leave?';
+  }
 });

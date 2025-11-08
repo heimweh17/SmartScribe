@@ -5,6 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>UF Health SmartScribe - Patient Details</title>
   <link rel="stylesheet" href="css/patient-details.css"/>
+  <style>
+    /* Transcription Animations */
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #typing-preview {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    #chat-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #chat-container::-webkit-scrollbar-track {
+      background: var(--bg);
+      border-radius: 4px;
+    }
+
+    #chat-container::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    #chat-container::-webkit-scrollbar-thumb:hover {
+      background: var(--text-secondary);
+    }
+  </style>
 </head>
 <body>
   <div class="app">
@@ -19,7 +59,7 @@
         <button id="logoutBtn" class="btn ghost" style="margin-left: 16px;">Log Out</button>
       </div>
     </header>
-
+    
     <!-- Main Grid -->
     <div class="grid">
       <!-- Left Sidebar -->
@@ -32,7 +72,7 @@
             <div class="mrn">MRN: 987654321</div>
           </div>
         </div>
-
+        
         <!-- Collapsible Sections -->
         <div class="section">
           <button class="section-header" onclick="toggleSection('demo')">
@@ -45,7 +85,7 @@
             <div class="row"><span class="label">Primary Pharmacy</span><span class="warn">Not Specified *</span></div>
           </div>
         </div>
-
+        
         <div class="section">
           <button class="section-header" onclick="toggleSection('vitals')">
             Vitals
@@ -58,7 +98,7 @@
             <div class="row"><span class="label">O₂ Sat</span><span>98%</span></div>
           </div>
         </div>
-
+        
         <div class="section">
           <button class="section-header" onclick="toggleSection('allergy')">
             Allergies & Medications
@@ -69,7 +109,7 @@
             <div class="row"><span class="label">Current Meds</span><span>Lisinopril 10 mg daily</span></div>
           </div>
         </div>
-
+        
         <div class="section">
           <button class="section-header" onclick="toggleSection('history')">
             Medical History
@@ -80,7 +120,7 @@
             <div class="row"><span class="label">Last Visit</span><span>03/15/2024</span></div>
           </div>
         </div>
-
+        
         <!-- Quick Notes -->
         <div class="notes">
           <div class="notes-title">Quick Notes</div>
@@ -93,92 +133,77 @@
         </div>
       </aside>
 
-      <!-- Center Panel: Form -->
-      <main class="main">
-        <div class="panel">
-          <div class="panel-title">Clinical Documentation Assistant</div>
-          <div class="panel-subtitle">Powered by NaviGator AI</div>
-
-          <form id="doc-form" onsubmit="generateSOAP(event)">
-            <div class="form-row">
-              <label for="chief">Chief Complaint</label>
-              <select id="chief" onchange="updateDynamic()">
-                <option value="">Select complaint...</option>
-                <option value="chest-pain">Chest Pain</option>
-                <option value="headache">Headache</option>
-                <option value="fever">Fever</option>
-                <option value="physical">Annual Physical</option>
-                <option value="diabetes">Diabetes Follow-up</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-
-            <div class="form-row">
-              <label for="hpi">History of Present Illness</label>
-              <textarea id="hpi" rows="4" placeholder="Describe the patient's symptoms, onset, duration, context..."></textarea>
-            </div>
-
-            <div id="dynamic" class="dynamic">
-              <!-- Dynamic fields injected by JS -->
-            </div>
-
-            <div class="form-row">
-              <label for="assessment">Assessment & Diagnosis</label>
-              <input id="assessment" type="text" placeholder="Primary diagnosis (free text for now)"/>
-            </div>
-
-            <div class="form-row">
-              <label for="plan">Plan</label>
-              <textarea id="plan" rows="4" placeholder="Treatment plan, medications, labs, follow-up..."></textarea>
-            </div>
-
-            <div class="form-actions">
-              <button type="submit" class="btn primary">Generate SOAP</button>
-              <button type="button" class="btn ghost" onclick="clearForm()">Clear</button>
-            </div>
-          </form>
-        </div>
-
-        <!-- Smart Alert -->
-        <div class="smart">
-          <div class="smart-icon">ℹ️</div>
-          <div class="smart-body">
-            <div class="smart-title">NaviGator Suggestion</div>
-            <div class="smart-text">For diabetes follow-up, consider HbA1c and lipid panel if not done in last 3 months.</div>
-            <div>
-              <button class="btn accent" onclick="appendToPlan('Order HbA1c and lipid panel.')">Add to Plan</button>
-              <button class="btn ghost">Dismiss</button>
-            </div>
+      <!-- Center Panel: Live Transcription -->
+      <main class="main-recording">
+        <div class="recording-wrapper" style="border: 2px solid #1E3B70; border-radius: 12px; padding: 24px; background: var(--card);">
+          
+          <!-- Transcription Header -->
+          <h3>Live Transcription 
+            <span id="recording-duration" style="color: var(--teal); margin-left: 10px; display: none;">00:00</span>
+          </h3>
+          
+          <!-- Control Buttons -->
+          <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+            <button id="start-recording" class="btn accent">
+              🎙️ Start Recording
+            </button>
+            <button id="stop-recording" class="btn" style="display: none; background: var(--uf-orange);">
+              ⏹️ Stop Recording
+            </button>
+            <button id="clear-transcript" class="btn" style="display: none;">
+              🗑️ Clear
+            </button>
+            <button id="export-transcript" class="btn" style="display: none;">
+              📄 Export
+            </button>
           </div>
+
+          <!-- Live Chat Container -->
+          <div id="chat-container" style="
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+          ">
+            <p style="color: var(--text-secondary); text-align: center; padding: 20px;">
+              Click "Start Recording" to begin transcription
+            </p>
+          </div>
+
+          <!-- Typing Preview -->
+          <div id="typing-preview" style="
+            color: var(--text-secondary);
+            font-style: italic;
+            padding: 8px;
+            min-height: 24px;
+            border-top: 1px solid var(--border);
+          "></div>
         </div>
       </main>
 
-      <!-- Right Sidebar: SOAP Preview -->
-      <aside class="preview">
-        <div class="panel-title">SOAP Preview</div>
-        <div class="soap">
-          <div class="soap-group">
-            <div class="soap-label">Subjective</div>
-            <div id="soap-subjective" class="soap-text">—</div>
-          </div>
-          <div class="soap-group">
-            <div class="soap-label">Objective</div>
-            <div id="soap-objective" class="soap-text">Vitals reviewed; exam to be documented.</div>
-          </div>
-          <div class="soap-group">
-            <div class="soap-label">Assessment</div>
-            <div id="soap-assessment" class="soap-text">—</div>
-          </div>
-          <div class="soap-group">
-            <div class="soap-label">Plan</div>
-            <div id="soap-plan" class="soap-text">—</div>
-          </div>
+      <!-- Right Sidebar: Patient Info or Additional Features -->
+      <aside class="chat-panel" style="border: 2px solid #1E3B70; border-radius: 12px; background: var(--card);">
+        <div class="chat-header">
+          <h3>Session Info</h3>
         </div>
-
-        <div class="preview-actions">
-          <button class="btn secondary">Save Draft</button>
-          <button class="btn secondary">Export</button>
-          <button class="btn primary">Complete & Sign</button>
+        
+        <div style="padding: 20px;">
+          <p style="color: var(--text-secondary);">
+            Recording session for <strong>Annalise Keating</strong>
+          </p>
+          <p style="color: var(--text-secondary); margin-top: 10px;">
+            MRN: 987654321
+          </p>
+        </div>
+        
+        <!-- Bottom Action Bar -->
+        <div class="chat-actions">
+          <button class="action-btn secondary-action">Save Draft</button>
+          <button class="action-btn secondary-action">Export</button>
+          <button class="action-btn primary-action">Complete & Sign</button>
         </div>
       </aside>
     </div>
@@ -186,14 +211,16 @@
 
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <!-- Supabase Configuration -->
   <script src="js/supabase.js"></script>
+  
   <!-- Page Protection Script -->
   <script>
     // Protect this page - require authentication
     (async function() {
       await protectPage();
-
+      
       // Add logout functionality
       const logoutBtn = document.getElementById('logoutBtn');
       if (logoutBtn) {
@@ -206,6 +233,11 @@
       }
     })();
   </script>
+
+  <!-- Transcription Scripts -->
+  <script src="js/deepgram-config.js"></script>
+  <script src="js/medical-transcription.js"></script>
+  
   <!-- Patient Details Logic -->
   <script src="js/patient-details.js"></script>
 </body>
