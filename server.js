@@ -4,7 +4,10 @@ const cors = require('cors');
 const { z } = require('zod');
 
 const app = express();
-app.use(cors({ origin: ['http://localhost:3000', 'http://127.0.0.1:3000'] }));
+app.use(cors({ 
+  origin: true,  // Allow all origins including file://
+  credentials: true 
+}));
 app.use(express.json());
 
 // ---- Mock medical data (replace with real CSV/DB later) ----
@@ -159,5 +162,5 @@ app.get('/api/suggest', (req, res) => {
 // Health check
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`UF SmartScribe API running on http://localhost:${PORT}`));

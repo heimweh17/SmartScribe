@@ -1,5 +1,5 @@
 // API base URL
-const API_BASE = 'http://localhost:4000/api';
+const API_BASE = 'http://localhost:3001/api';
 
 // Collapsible sections
 function toggleSection(id) {
