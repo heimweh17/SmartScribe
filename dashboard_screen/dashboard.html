@@ -13,10 +13,10 @@
             <h1 class="header-title">Medical Consultation Documentation Assistant</h1>
             <div class="header-right">
                 <div class="doctor-info">
-                    <div class="avatar-circle">JD</div>
+                    <div class="avatar-circle" id="userInitials">JD</div>
                     <div class="doctor-details">
-                        <div class="doctor-name">Dr. Jane Doe</div>
-                        <div class="doctor-title">MD</div>
+                        <div class="doctor-name" id="userName">Dr. Jane Doe</div>
+                        <div class="doctor-title" id="userTitle">MD</div>
                     </div>
                 </div>
                 <button class="logout-btn" id="logoutBtn">Log Out</button>
@@ -59,6 +59,43 @@
       (async function() {
         await protectPage();
 
+        // Get user information and update UI
+        try {
+          const { data: { user }, error } = await supabase.auth.getUser();
+
+          if (user) {
+            console.log('User data:', user);
+
+            // Get user's full name from metadata or email
+            const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+            const email = user.email || '';
+
+            // Update user name display
+            const userNameElement = document.getElementById('userName');
+            if (userNameElement) {
+              userNameElement.textContent = fullName;
+            }
+
+            // Generate and update initials
+            const initialsElement = document.getElementById('userInitials');
+            if (initialsElement) {
+              const initials = getInitials(fullName);
+              initialsElement.textContent = initials;
+            }
+
+            // Optional: Update title based on user metadata
+            const userTitleElement = document.getElementById('userTitle');
+            if (userTitleElement && user.user_metadata?.title) {
+              userTitleElement.textContent = user.user_metadata.title;
+            } else if (userTitleElement) {
+              // Show email instead of default "MD"
+              userTitleElement.textContent = email;
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
+
         // Add logout functionality
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
@@ -70,6 +107,19 @@
           });
         }
       })();
+
+      // Helper function to generate initials from name
+      function getInitials(name) {
+        if (!name) return 'U';
+
+        const parts = name.trim().split(' ');
+        if (parts.length === 1) {
+          return parts[0].substring(0, 2).toUpperCase();
+        }
+
+        // Get first letter of first name and first letter of last name
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      }
     </script>
     <script src="script.js"></script>
 </body>
