@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (session) {
       // User is already logged in, redirect to dashboard
       console.log('Redirecting to Dashboard...');
-      window.location.href = './dashboard_screen/dashboard.html';
+      window.location.href = '/dashboard_screen/dashboard.html';
       return;
     }
   } catch (err) {
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // Redirect to dashboard page
         console.log('Redirecting to dashboard_screen.html...');
-        window.location.href = './dashboard_screen/dashboard.html';
+        window.location.href = '/dashboard_screen/dashboard.html';
 
       } catch (error) {
         console.error('❌ Login error:', error);
