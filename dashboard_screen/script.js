@@ -50,11 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Logout button functionality
 const logoutBtn = document.querySelector('.logout-btn');
 logoutBtn.addEventListener('click', function() {
-    if (confirm('Are you sure you want to log out?')) {
-        alert('Logging out...');
-        // Here you would typically redirect to a login page
-        // window.location.href = '/login';
-    }
+    
 });
 
 // Action button functionality (folder and document icons)
