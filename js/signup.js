@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', async function() {
           // Unexpected state
           showSuccess('Account created successfully! Please log in.');
           setTimeout(() => {
-            window.location.href = 'index.html';
+            window.location.href = '/index.html';
           }, 2000);
         }
 
