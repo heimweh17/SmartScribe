@@ -59,8 +59,8 @@ supabase.auth.onAuthStateChange((event, session) => {
     case 'SIGNED_OUT':
       console.log('User signed out');
       // Redirect to login page if not already there
-      if (window.location.pathname !== '/index.html' && !window.location.pathname.endsWith('/')) {
-        window.location.href = '/index.html';
+      if (window.location.pathname !== './index.html' && !window.location.pathname.endsWith('/')) {
+        window.location.href = './index.html';
       }
       break;
     case 'TOKEN_REFRESHED':
@@ -77,12 +77,12 @@ async function protectPage() {
   const authenticated = await isUserAuthenticated();
 
   // List of pages that don't require authentication
-  const publicPages = ['/', '/index.html'];
+  const publicPages = ['./', './index.html'];
   const currentPath = window.location.pathname;
 
   if (!authenticated && !publicPages.some(page => currentPath.endsWith(page))) {
     // User is not authenticated and trying to access protected page
-    window.location.href = '/index.html';
+    window.location.href = './index.html';
   }
 }
 
