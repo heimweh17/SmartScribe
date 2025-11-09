@@ -52,7 +52,7 @@ html, body {
 
 .grid {
   display: grid;
-  grid-template-columns: 320px 1fr 360px;
+  grid-template-columns: 1000px 1fr;
   gap: 16px;
   padding: 16px;
   height: calc(100% - 60px);
@@ -152,7 +152,7 @@ html, body {
 }
 .notes-title { font-weight: 600; margin-bottom: 8px; color: white; }
 .notes textarea {
-  width: 100%; min-height: 90px; resize: vertical;
+  width: 100%; min-height: 120px; resize: vertical;
   background: var(--input-bg); color: white;
   border: 1px solid var(--input-border); border-radius: 8px; padding: 8px 10px;
   transition: all 0.2s;
@@ -299,3 +299,5 @@ input:hover, select:hover, textarea:hover {
   .grid { grid-template-columns: 1fr; }
   .preview-actions { margin-top: 8px; }
 }
+
+
