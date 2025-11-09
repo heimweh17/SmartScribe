@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (session) {
       // User is already logged in, redirect to dashboard
       console.log('Redirecting to Dashboard...');
-      window.location.href = './dashboard_screen/dashboard.html';
+      window.location.href = '/dashboard_screen/dashboard.html';
       return;
     }
   } catch (err) {
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
           // Redirect to login page after a delay
           setTimeout(() => {
-            window.location.href = './index.html';
+            window.location.href = 'index.html';
           }, 2000);
         } else if (data.session) {
           // Auto-login enabled (no email confirmation required)
@@ -162,12 +162,12 @@ document.addEventListener('DOMContentLoaded', async function() {
 
           // Redirect to dashboard
           console.log('Redirecting to dashboard...');
-          window.location.href = './dashboard_screen/dashboard.html';
+          window.location.href = '/dashboard_screen/dashboard.html';
         } else {
           // Unexpected state
           showSuccess('Account created successfully! Please log in.');
           setTimeout(() => {
-            window.location.href = './index.html';
+            window.location.href = '/index.html';
           }, 2000);
         }
 
