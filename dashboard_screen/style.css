@@ -268,7 +268,26 @@ body {
 .action-btn svg {
     color: white;
 }
+.delete-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: #2563eb;
+    border: none;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.3s;
+}
 
+.delete-btn:hover {
+    background: #3b82f6;
+}
+
+.delete-btn svg {
+    color: white;
+}
 /* No Results */
 .no-results {
     text-align: center;
@@ -492,6 +511,138 @@ body {
 .btn-secondary:hover {
   border-color: rgba(255, 255, 255, 0.4);
   background: rgba(255, 255, 255, 0.1);
+}
+/* Confirmation Toast */
+.confirmation-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #1F3666;
+  border: 1px solid rgba(59, 92, 184, 0.3);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 1001;
+  min-width: 320px;
+  max-width: 400px;
+}
+
+.confirmation-toast-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.confirmation-toast h3 {
+  color: #E7ECF5;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.confirmation-toast p {
+  color: #94A3B8;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 20px 0;
+}
+
+.confirmation-toast-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.toast-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.toast-btn-cancel {
+  background: transparent;
+  border: 1px solid rgba(59, 92, 184, 0.3);
+  color: #D6E6FF;
+}
+
+.toast-btn-cancel:hover {
+  border-color: #FA4616;
+}
+
+.toast-btn-delete {
+  background: #EF4444;
+  color: #fff;
+}
+
+.toast-btn-delete:hover {
+  background: #DC2626;
+}
+
+/* Success/Error Notification */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #1F3666;
+  border: 1px solid rgba(59, 92, 184, 0.3);
+  border-radius: 10px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 280px;
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification.success {
+  border-left: 4px solid #10B981;
+}
+
+.notification.error {
+  border-left: 4px solid #EF4444;
+}
+
+.notification-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.notification.success .notification-icon {
+  color: #10B981;
+}
+
+.notification.error .notification-icon {
+  color: #EF4444;
+}
+
+.notification-message {
+  color: #E7ECF5;
+  font-size: 14px;
+  font-weight: 500;
 }
 /* Responsive Design */
 @media (max-width: 768px) {

@@ -379,7 +379,9 @@
             patientCard.addEventListener('click', function() {
               // Navigate to patient details (placeholder)
               // e.g. window.location.href = `patient-details.html?mrn=${patient.mrn}`;
-              window.location.href='../patient-details.html';
+              const patientName = patient.patient_name; // or use patient.mrn
+              window.location.href = `../patient-details.html?name=${encodeURIComponent(patientName)}`;
+              
             });
           });
 

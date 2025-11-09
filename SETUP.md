@@ -132,3 +132,87 @@ Smart-Clinical/
 ## Support
 
 For Supabase documentation: [https://supabase.com/docs](https://supabase.com/docs)
+
+
+
+-- Create consultations table for storing complete medical records
+CREATE TABLE IF NOT EXISTS consultations (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  patient_mrn TEXT NOT NULL,
+  patient_name TEXT NOT NULL,
+  
+  -- Patient Demographics
+  date_of_birth TEXT,
+  chief_complaint TEXT,
+  primary_pharmacy TEXT,
+  
+  -- Vitals
+  bp TEXT,
+  hr TEXT,
+  temp TEXT,
+  o2_sat TEXT,
+  
+  -- Medical Info
+  allergies TEXT,
+  current_medications TEXT,
+  medical_conditions TEXT,
+  last_visit TEXT,
+  
+  -- Consultation Data
+  transcript JSONB DEFAULT '[]'::jsonb,
+  recording_duration_seconds DECIMAL,
+  
+  -- SOAP Note
+  soap_subjective TEXT,
+  soap_objective TEXT,
+  soap_assessment TEXT,
+  soap_plan TEXT,
+  
+  -- AI Recommendations
+  rec_medications TEXT,
+  rec_lifestyle TEXT,
+  rec_followup TEXT,
+  rec_education TEXT,
+  rec_tests TEXT,
+  rec_referrals TEXT,
+  
+  -- Additional Notes
+  quick_notes TEXT,
+  
+  -- Metadata
+  consultation_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes for faster queries
+CREATE INDEX IF NOT EXISTS idx_consultations_patient_mrn ON consultations(patient_mrn);
+CREATE INDEX IF NOT EXISTS idx_consultations_user_id ON consultations(user_id);
+CREATE INDEX IF NOT EXISTS idx_consultations_date ON consultations(consultation_date DESC);
+
+-- Enable Row Level Security
+ALTER TABLE consultations ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view own consultations" ON consultations;
+DROP POLICY IF EXISTS "Users can insert own consultations" ON consultations;
+DROP POLICY IF EXISTS "Users can update own consultations" ON consultations;
+DROP POLICY IF EXISTS "Users can delete own consultations" ON consultations;
+
+-- Create policies: Users can only see their own consultations
+CREATE POLICY "Users can view own consultations"
+  ON consultations FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own consultations"
+  ON consultations FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own consultations"
+  ON consultations FOR UPDATE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own consultations"
+  ON consultations FOR DELETE
+  USING (auth.uid() = user_id);
