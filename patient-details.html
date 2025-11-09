@@ -92,14 +92,9 @@
       <!-- Left Sidebar -->
       <aside class="sidebar">
         <!-- Patient Card -->
-        <div class="patient-card">
-          <div class="avatar">AK</div>
-          <div class="patient-meta">
-            <div class="name">Annalise Keating</div>
-            <div class="mrn">MRN: 987654321</div>
-          </div>
-        </div>
-        
+        <div id="patientCardContainer"></div>
+
+      
         <!-- Collapsible Sections -->
         <div class="section">
           <button class="section-header" onclick="toggleSection('demo')">
@@ -107,9 +102,9 @@
             <span class="chev">▾</span>
           </button>
           <div id="demo" class="section-body">
-            <div class="row"><span class="label">DOB</span><span>08/21/1975</span></div>
-            <div class="row"><span class="label">Chief Complaint</span><span class="accent">Annual Physical Exam</span></div>
-            <div class="row"><span class="label">Primary Pharmacy</span><span class="warn">Not Specified *</span></div>
+            <div class="row"><span class="label">DOB</span><span id="demo-dob">08/21/1975</span></div>
+            <div class="row"><span class="label">Chief Complaint</span><span id="demo-cc" class="accent">Annual Physical Exam</span></div>
+            <div class="row"><span class="label">Primary Pharmacy</span><span id="demo-pharmacy" class="warn">Not Specified *</span></div>
           </div>
         </div>
         
@@ -119,10 +114,10 @@
             <span class="chev">▾</span>
           </button>
           <div id="vitals" class="section-body collapsed">
-            <div class="row"><span class="label">BP</span><span>120/80 mmHg</span></div>
-            <div class="row"><span class="label">HR</span><span>72 bpm</span></div>
-            <div class="row"><span class="label">Temp</span><span>98.6°F</span></div>
-            <div class="row"><span class="label">O₂ Sat</span><span>98%</span></div>
+            <div class="row"><span class="label">BP</span><span id="vitals-bp">120/80 mmHg</span></div>
+            <div class="row"><span class="label">HR</span><span id="vitals-hr">72 bpm</span></div>
+            <div class="row"><span class="label">Temp</span><span id="vitals-temp">98.6°F</span></div>
+            <div class="row"><span class="label">O₂ Sat</span><span id="vitals-o2">98%</span></div>
           </div>
         </div>
         
@@ -132,8 +127,8 @@
             <span class="chev">▾</span>
           </button>
           <div id="allergy" class="section-body collapsed">
-            <div class="row"><span class="label">Allergies</span><span>None noted</span></div>
-            <div class="row"><span class="label">Current Meds</span><span>Lisinopril 10 mg daily</span></div>
+            <div class="row"><span class="label">Allergies</span><span id="allergy-list">None noted</span></div>
+            <div class="row"><span class="label">Current Meds</span><span id="meds-list">Lisinopril 10 mg daily</span></div>
           </div>
         </div>
         
@@ -143,8 +138,8 @@
             <span class="chev">▾</span>
           </button>
           <div id="history" class="section-body collapsed">
-            <div class="row"><span class="label">Conditions</span><span>Hypertension, Type II Diabetes</span></div>
-            <div class="row"><span class="label">Last Visit</span><span>03/15/2024</span></div>
+            <div class="row"><span class="label">Conditions</span><span id="history-conditions">Hypertension, Type II Diabetes</span></div>
+            <div class="row"><span class="label">Last Visit</span><span id="history-last-visit">03/15/2024</span></div>
           </div>
         </div>
         
@@ -393,5 +388,44 @@
       }
     });
   </script>
+  <script type="module">
+    function createPatientCardHTML(patient) {
+      const initials = getInitials(patient.patient_name);
+
+      return `
+        <div class="patient-card">
+          <div class="avatar">${initials}</div>
+          <div class="patient-meta">
+            <div class="name">${patient.patient_name}</div>
+            <div class="mrn">MRN: ${patient.mrn}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function getInitials(name) {
+      return name
+        .split(' ')
+        .map(word => word[0])
+        .join('')
+        .toUpperCase();
+    }
+    const urlParams = new URLSearchParams(window.location.search);
+    const patientName = urlParams.get('name');
+
+    const { data: patient, error } = await supabase
+      .from('patients')
+      .select('*')
+      .eq('patient_name', patientName)
+      .single();
+
+    if (error) {
+      console.error('Error fetching patient:', error);
+    } else {
+      const container = document.getElementById('patientCardContainer');
+      container.innerHTML = createPatientCardHTML(patient);
+    }
+  </script>
+
 </body>
 </html>

@@ -194,6 +194,20 @@ async function stopRecording() {
 
     showNotification('⏹️ Recording stopped', 'success');
 
+    // Automatically ask AI to extract sidebar fields (demographics, vitals, meds, problems)
+    try {
+      const patientInfo = getPatientFromURL();
+      if (aiSummary && typeof aiSummary.generateSidebarData === 'function') {
+        document.getElementById('ai-status').textContent = 'Extracting sidebar data...';
+        const sidebarData = await aiSummary.generateSidebarData(finalTranscript, patientInfo);
+        populateSidebarWithAI(sidebarData);
+        document.getElementById('ai-status').textContent = 'Ready';
+      }
+    } catch (err) {
+      console.error('Error extracting sidebar data:', err);
+      document.getElementById('ai-status').textContent = 'Error';
+    }
+
   } catch (error) {
     console.error('Error stopping recording:', error);
     showNotification('❌ Error stopping recording', 'error');
@@ -510,6 +524,69 @@ function copySummaryToClipboard() {
   }).catch(err => {
     showNotification('❌ Failed to copy', 'error');
   });
+}
+
+// Populate sidebar DOM with AI-extracted data
+function populateSidebarWithAI(data) {
+  if (!data || typeof data !== 'object') return;
+
+  // Demographics
+  try {
+    if (data.demographics) {
+      const dobEl = document.getElementById('demo-dob');
+      const ccEl = document.getElementById('demo-cc');
+      const pharmacyEl = document.getElementById('demo-pharmacy');
+      const nameEl = document.querySelector('.patient-card .name');
+      const mrnEl = document.querySelector('.patient-card .mrn');
+
+      if (nameEl && data.demographics.name) nameEl.textContent = data.demographics.name;
+      if (mrnEl && data.demographics.mrn) mrnEl.textContent = `MRN: ${data.demographics.mrn}`;
+      if (dobEl && data.demographics.dob) dobEl.textContent = new Date(data.demographics.dob).toLocaleDateString();
+      if (ccEl && data.chief_complaint) ccEl.textContent = data.chief_complaint;
+      if (pharmacyEl && data.primary_pharmacy) pharmacyEl.textContent = data.primary_pharmacy;
+    }
+
+    // Vitals
+    if (data.vitals) {
+      const bpEl = document.getElementById('vitals-bp');
+      const hrEl = document.getElementById('vitals-hr');
+      const tempEl = document.getElementById('vitals-temp');
+      const o2El = document.getElementById('vitals-o2');
+
+      if (bpEl && (data.vitals.bp_systolic || data.vitals.bp_diastolic)) {
+        const s = data.vitals.bp_systolic || '--';
+        const d = data.vitals.bp_diastolic || '--';
+        bpEl.textContent = `${s}/${d} mmHg`;
+      }
+      if (hrEl && data.vitals.heart_rate) hrEl.textContent = `${data.vitals.heart_rate} bpm`;
+      if (tempEl && data.vitals.temperature) tempEl.textContent = `${data.vitals.temperature}°${data.vitals.temperature_unit || 'F'}`;
+      if (o2El && data.vitals.o2_saturation) o2El.textContent = `${data.vitals.o2_saturation}%`;
+    }
+
+    // Allergies & medications
+    if (Array.isArray(data.allergies)) {
+      const allergyEl = document.querySelector('#allergy .row:nth-child(1) span:last-child');
+      if (allergyEl) allergyEl.textContent = data.allergies.length ? data.allergies.join(', ') : 'None noted';
+    }
+
+    if (Array.isArray(data.medications)) {
+      const medsEl = document.querySelector('#allergy .row:nth-child(2) span:last-child');
+      if (medsEl) medsEl.textContent = data.medications.length ? data.medications.join(', ') : 'None noted';
+    }
+
+    // Active problems / History
+    if (Array.isArray(data.active_problems)) {
+      const condEl = document.querySelector('#history .row:nth-child(1) span:last-child');
+      if (condEl) condEl.textContent = data.active_problems.length ? data.active_problems.map(p => p.condition).join(', ') : 'None listed';
+    }
+
+    // Care gaps (not shown explicitly, but can surface as a notification)
+    if (Array.isArray(data.care_gaps) && data.care_gaps.length) {
+      showNotification(`⚠️ AI detected ${data.care_gaps.length} care gap(s)`, 'info');
+    }
+  } catch (err) {
+    console.error('Error populating sidebar with AI data', err);
+  }
 }
 
 // Export summary to file
