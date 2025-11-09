@@ -268,7 +268,26 @@ body {
 .action-btn svg {
     color: white;
 }
+.delete-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: #2563eb;
+    border: none;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.3s;
+}
 
+.delete-btn:hover {
+    background: #3b82f6;
+}
+
+.delete-btn svg {
+    color: white;
+}
 /* No Results */
 .no-results {
     text-align: center;
