@@ -98,10 +98,53 @@ function initializeTranscription() {
   console.log('✅ Transcription system initialized');
 
   // Start Recording Button
+  // --- 🟢 Add Consent Modal ---
+  const modal = document.createElement('div');
+  modal.innerHTML = `
+    <div id="consent-modal" class="modal">
+      <div class="modal-content">
+        <h2>Patient Consent</h2>
+        <p class="consent-text">
+          Do you consent to being recorded for medical documentation and transcription purposes?
+        </p>
+        <div class="modal-buttons">
+          <button id="consent-yes" class="btn accent">Yes, I consent</button>
+          <button id="consent-no" class="btn">No</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  const modalEl = document.getElementById('consent-modal');
+
+  function openConsentModal() {
+    modalEl.style.display = 'flex';
+  }
+  function closeConsentModal() {
+    modalEl.style.display = 'none';
+  }
+
+  // Start Recording Button
   startBtn.addEventListener('click', async () => {
+    // show the consent modal first
+    openConsentModal();
+
+    // wait for consent response
+    const consent = await new Promise((resolve) => {
+      document.getElementById('consent-yes').onclick = () => resolve(true);
+      document.getElementById('consent-no').onclick = () => resolve(false);
+    });
+
+    closeConsentModal();
+    if (!consent) {
+      showNotification('⚠️ Recording canceled — patient did not consent', 'warning');
+      return;
+    }
+
     try {
       console.log('Starting recording...');
-      
+
       await transcription.start((segment) => {
         if (segment.isFinal) {
           addMessageToChat(segment);
@@ -118,7 +161,7 @@ function initializeTranscription() {
       exportBtn.style.display = 'inline-block';
       document.getElementById('recording-duration').style.display = 'inline';
 
-      // Clear the initial message
+      // Clear initial message
       const chatContainer = document.getElementById('chat-container');
       if (chatContainer.querySelector('p')) {
         chatContainer.innerHTML = '';
@@ -130,7 +173,7 @@ function initializeTranscription() {
       
     } catch (error) {
       console.error('Error starting recording:', error);
-      
+
       if (error.message.includes('Permission denied') || error.message.includes('NotAllowedError')) {
         showNotification('❌ Please allow microphone access', 'error');
       } else if (error.message.includes('NotFoundError')) {

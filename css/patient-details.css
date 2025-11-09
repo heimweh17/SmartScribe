@@ -290,6 +290,60 @@ input:hover, select:hover, textarea:hover {
   min-height: 56px;
   color: white;
 }
+/* Consent popup */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* 🔧 ensure your consent question text shows properly */
+.modal-content h2 {
+  margin-bottom: 10px;
+  font-size: 1.25rem;
+  color: #222;
+}
+
+.modal-content p {
+  color: #333;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 10px 0 20px;
+  display: block;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn.accent {
+  background: #007bff;
+  color: white;
+}
+
 
 /* Preview Actions */
 .preview-actions { display: flex; gap: 8px; }

@@ -114,6 +114,20 @@
             <button id="start-recording" class="btn accent">
               🎙️ Start Recording
             </button>
+            <!-- Consent Modal -->
+            <div id="consent-modal" class="modal">
+              <div class="modal-content">
+                <h2>Patient Consent</h2>
+                <p>
+                  Do you consent to being recorded for medical documentation and transcription purposes?
+                </p>
+                <div class="modal-buttons">
+                  <button id="consent-yes" class="btn accent">Yes, I consent</button>
+                  <button id="consent-no" class="btn">No</button>
+                </div>
+              </div>
+            </div>
+
             <button id="stop-recording" class="btn" style="display: none; background: var(--uf-orange);">
               ⏹️ Stop Recording
             </button>
@@ -385,6 +399,27 @@
       container.innerHTML = createPatientCardHTML(patient);
     }
   </script>
+  <script>
+  const startButton = document.getElementById("start-recording");
+  const modal = document.getElementById("consent-modal");
+  const yesBtn = document.getElementById("consent-yes");
+  const noBtn = document.getElementById("consent-no");
+
+  startButton.addEventListener("click", () => {
+    modal.style.display = "flex";
+  });
+
+  yesBtn.addEventListener("click", () => {
+    modal.style.display = "none";
+    
+    // startRecording(); // <-- call your recording logic here
+  });
+
+  noBtn.addEventListener("click", () => {
+    modal.style.display = "none";
+    
+  });
+</script>
 
 </body>
 </html>
