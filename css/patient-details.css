@@ -20,7 +20,7 @@ html, body {
   --uf-blue-800: rgba(13, 71, 161, 0.85);
   --uf-orange: #ff5722;
   --uf-orange-dark: #f4511e;
-  --teal: #2DD4BF;
+  --teal: #ff5722;
   --card: rgba(13, 71, 161, 0.85);
   --muted: rgba(255, 255, 255, 0.7);
   --border: rgba(255, 255, 255, 0.2);
@@ -52,7 +52,7 @@ html, body {
 
 .grid {
   display: grid;
-  grid-template-columns: 1000px 1fr;
+  grid-template-columns: 1.6fr .9fr;
   gap: 16px;
   padding: 16px;
   height: calc(100% - 60px);

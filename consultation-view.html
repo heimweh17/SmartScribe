@@ -34,12 +34,12 @@
     }
 
     .soap-title {
-      color: var(--uf-blue);
+      color: var(--teal);
       font-size: 1.1em;
       font-weight: 600;
       margin-bottom: 12px;
       padding-bottom: 8px;
-      border-bottom: 2px solid var(--uf-blue);
+      border-bottom: 2px solid var(--teal);
     }
 
     .soap-content {
@@ -88,7 +88,8 @@
 <body>
   <div class="app">
     <!-- Header with Back Button -->
-    <header class="header">
+<header class="header">
+      <!-- Back to Dashboard Button -->
       <button id="backBtn" class="btn ghost" style="
         position: absolute;
         left: 20px;
@@ -103,18 +104,18 @@
       " 
       onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'"
       onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>
-        <span>Back to Documents</span>
+        <span>Documents</span>
       </button>
 
-      <div class="brand" style="margin-left: 200px;">
+      <div class="brand" style="margin-left: 140px;">
         <div class="logo">UF</div>
         <div class="title">Health SmartScribe</div>
       </div>
       
-      <div class="right" style="margin-left: auto;">
+      <div class="right">
         <span class="facility">UF Health Shands</span>
         <button id="logoutBtn" class="btn ghost" style="margin-left: 16px;">Log Out</button>
       </div>
@@ -184,7 +185,7 @@
       <!-- AI Recommendations -->
       <div class="view-section" id="recommendations-section">
         <h3 style="margin: 0 0 16px 0; color: var(--teal); font-size: 1.3em;">💡 AI Recommendations</h3>
-        
+
         <div class="rec-grid">
           <div class="rec-item">
             <div class="rec-title">💊 Medications</div>
@@ -216,6 +217,53 @@
             <div class="rec-content" id="view-rec-referrals">—</div>
           </div>
         </div>
+      </div>
+
+      <!-- Transcript -->
+      <div class="view-section" id="transcript-section" style="display: none;">
+        <h3 style="margin: 0 0 16px 0; color: var(--teal); font-size: 1.3em;">🎙️ Conversation Transcript</h3>
+        <div id="transcript-container" style="
+          background: var(--bg);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          padding: 16px;
+          max-height: 500px;
+          overflow-y: auto;
+        ">
+          <!-- Transcript will be loaded here -->
+        </div>
+        <div style="margin-top: 12px; font-size: 0.9em; color: var(--text-secondary);">
+          <span id="transcript-duration"></span>
+        </div>
+      </div>
+
+      <!-- Quick Notes -->
+      <div class="view-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="margin: 0; color: var(--teal); font-size: 1.3em;">📝 Quick Notes</h3>
+          <button id="saveNotesBtn" class="btn accent" style="padding: 8px 16px; font-size: 0.9em;">
+            Save Notes
+          </button>
+        </div>
+        <textarea
+          id="quickNotesInput"
+          placeholder="Add any additional notes or reminders here..."
+          style="
+            width: 100%;
+            min-height: 150px;
+            padding: 16px;
+            border: 2px solid #1E3B70;
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 1em;
+            line-height: 1.6;
+            resize: vertical;
+            box-sizing: border-box;
+          "
+        ></textarea>
+        <div id="notesSaveStatus" style="margin-top: 8px; font-size: 0.9em; color: var(--text-secondary);"></div>
       </div>
 
     </div>
@@ -313,7 +361,7 @@
       // Only show: Name, MRN, Time
       document.getElementById('view-patient-name').textContent = c.patient_name || 'Unknown Patient';
       document.getElementById('view-mrn').textContent = c.patient_mrn || '—';
-      
+
       const consultDate = new Date(c.consultation_date);
       document.getElementById('view-date').textContent = consultDate.toLocaleString('en-US', {
         year: 'numeric',
@@ -342,6 +390,25 @@
       if (!hasRecommendations) {
         document.getElementById('recommendations-section').style.display = 'none';
       }
+
+      // Transcript
+      if (c.transcript_html && c.transcript_html.trim() !== '') {
+        document.getElementById('transcript-container').innerHTML = c.transcript_html;
+        document.getElementById('transcript-section').style.display = 'block';
+
+        // Display duration if available
+        if (c.recording_duration_seconds) {
+          const minutes = Math.floor(c.recording_duration_seconds / 60);
+          const seconds = Math.floor(c.recording_duration_seconds % 60);
+          const durationText = `Recording Duration: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+          document.getElementById('transcript-duration').textContent = durationText;
+        }
+      } else {
+        document.getElementById('transcript-section').style.display = 'none';
+      }
+
+      // Quick Notes
+      document.getElementById('quickNotesInput').value = c.quick_notes || '';
     }
 
     // Export to file
@@ -349,7 +416,33 @@
       const patientName = document.getElementById('view-patient-name').textContent;
       const mrn = document.getElementById('view-mrn').textContent;
       const date = document.getElementById('view-date').textContent;
-      
+      const quickNotes = document.getElementById('quickNotesInput').value;
+
+      // Get transcript text
+      let transcriptText = '';
+      const transcriptSection = document.getElementById('transcript-section');
+      if (transcriptSection && transcriptSection.style.display !== 'none') {
+        const transcriptContainer = document.getElementById('transcript-container');
+        const transcriptElements = transcriptContainer.querySelectorAll('div > div:first-child > strong');
+        const textElements = transcriptContainer.querySelectorAll('div > div:last-child');
+        const timestamps = transcriptContainer.querySelectorAll('div > div:first-child > span');
+
+        if (transcriptElements.length > 0) {
+          transcriptText = '\n\nCONVERSATION TRANSCRIPT\n-----------------------\n';
+          const duration = document.getElementById('transcript-duration').textContent;
+          if (duration) {
+            transcriptText += duration + '\n\n';
+          }
+
+          for (let i = 0; i < transcriptElements.length; i++) {
+            const speaker = transcriptElements[i].textContent;
+            const text = textElements[i].textContent;
+            const timestamp = timestamps[i] ? timestamps[i].textContent : '';
+            transcriptText += `[${timestamp}] ${speaker}: ${text}\n\n`;
+          }
+        }
+      }
+
       const content = `
 UF HEALTH SMARTSCRIBE - CONSULTATION REPORT
 ============================================
@@ -381,6 +474,10 @@ AI RECOMMENDATIONS
 📚 Education: ${document.getElementById('view-rec-education').textContent}
 🔬 Tests: ${document.getElementById('view-rec-tests').textContent}
 🏥 Referrals: ${document.getElementById('view-rec-referrals').textContent}
+${transcriptText}
+QUICK NOTES
+-----------
+${quickNotes || 'No additional notes'}
 
 ============================================
 Generated by UF Health SmartScribe
@@ -388,16 +485,57 @@ Generated by UF Health SmartScribe
 
       const blob = new Blob([content], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
-      
+
       const a = document.createElement('a');
       a.href = url;
       a.download = `consultation-${mrn}-${Date.now()}.txt`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      
+
       URL.revokeObjectURL(url);
     }
+
+    // Save Quick Notes
+    document.getElementById('saveNotesBtn').addEventListener('click', async () => {
+      const notesInput = document.getElementById('quickNotesInput');
+      const statusDiv = document.getElementById('notesSaveStatus');
+      const saveBtn = document.getElementById('saveNotesBtn');
+
+      try {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+        statusDiv.textContent = '';
+
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          throw new Error('You must be logged in to save notes');
+        }
+
+        const { error } = await supabase
+          .from('consultations')
+          .update({ quick_notes: notesInput.value })
+          .eq('id', consultationId)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+
+        statusDiv.style.color = 'var(--teal)';
+        statusDiv.textContent = 'Notes saved successfully!';
+
+        setTimeout(() => {
+          statusDiv.textContent = '';
+        }, 3000);
+
+      } catch (error) {
+        console.error('Error saving notes:', error);
+        statusDiv.style.color = '#dc2626';
+        statusDiv.textContent = 'Failed to save notes: ' + error.message;
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Notes';
+      }
+    });
 
     // Logout
     document.getElementById('logoutBtn').addEventListener('click', async () => {

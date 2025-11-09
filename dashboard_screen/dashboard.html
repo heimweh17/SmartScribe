@@ -9,18 +9,21 @@
 <body>
     <!-- Header -->
     <header class="header">
-        <div class="header-container">
-            <h1 class="header-title">Medical Consultation Documentation Assistant</h1>
-            <div class="header-right">
-                <div class="doctor-info">
-                    <div class="avatar-circle" id="userInitials">JD</div>
-                    <div class="doctor-details">
-                        <div class="doctor-name" id="userName">Dr. Jane Doe</div>
-                        <div class="doctor-title" id="userTitle">MD</div>
-                    </div>
+        <div class="brand">
+            <div class="logo">UF</div>
+            <div class="title">Health SmartScribe</div>
+        </div>
+
+        <div class="right">
+            <div class="doctor-info">
+                <div class="avatar-circle" id="userInitials">JD</div>
+                <div class="doctor-details">
+                    <div class="doctor-name" id="userName">Dr. Jane Doe</div>
+                    <div class="doctor-title" id="userTitle">MD</div>
                 </div>
-                <button class="logout-btn" id="logoutBtn">Log Out</button>
             </div>
+            <span class="facility">UF Health Shands</span>
+            <button class="btn ghost" id="logoutBtn" style="margin-left: 16px;">Log Out</button>
         </div>
     </header>
 
@@ -96,10 +99,6 @@
                 <div class="form-group-modal">
                     <label for="patientDOB">Date of Birth *</label>
                     <input type="date" id="patientDOB" name="patientDOB" required>
-                </div>
-                <div class="form-group-modal">
-                    <label for="visitDate">Visit Date & Time *</label>
-                    <input type="datetime-local" id="visitDate" name="visitDate" required>
                 </div>
                 <div class="form-info">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -209,7 +208,7 @@
             .from('patients')
             .select('*')
             .eq('user_id', user.id)
-            .order('visit_date', { ascending: true});
+          
 
           if (error) {
             throw error;
@@ -417,7 +416,6 @@
               <h3 class="patient-name">${patient.patient_name || 'Unknown Patient'}</h3>
               <div class="patient-details">
                 <div>DOB: ${dobFormatted}, MRN: ${patient.mrn || 'N/A'}</div>
-                <div>Visit: ${visitFormatted}</div>
               </div>
             </div>
           </div>

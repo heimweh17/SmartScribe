@@ -718,6 +718,33 @@ function gatherPatientData() {
 }
 
 /**
+ * Generate formatted transcript HTML
+ */
+function generateTranscriptHTML(transcript) {
+  if (!transcript || transcript.length === 0) {
+    return '';
+  }
+
+  let html = '';
+  transcript.forEach(segment => {
+    const speakerColor = segment.speaker === 'Doctor' ? '#0021A5' : '#FA4616';
+    const bgColor = segment.speaker === 'Doctor' ? 'rgba(0, 33, 165, 0.1)' : 'rgba(250, 70, 22, 0.1)';
+
+    html += `
+      <div style="margin-bottom: 12px; padding: 12px; border-radius: 8px; background: ${bgColor}; border-left: 3px solid ${speakerColor};">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px; align-items: center;">
+          <strong style="color: ${speakerColor}; font-size: 0.95em;">${segment.speaker}</strong>
+          <span style="color: #888; font-size: 0.85em;">${segment.timestamp}</span>
+        </div>
+        <div style="color: #ffffff; line-height: 1.5;">${segment.text}</div>
+      </div>
+    `;
+  });
+
+  return html;
+}
+
+/**
  * Save complete consultation to Supabase
  */
 async function saveCompleteConsultation() {
@@ -734,6 +761,7 @@ async function saveCompleteConsultation() {
 
     const patientData = gatherPatientData();
     const transcript = transcription ? transcription.getTranscript() : [];
+    const transcriptHTML = generateTranscriptHTML(transcript);
 
     const consultationData = {
       user_id: user.id,
@@ -751,6 +779,7 @@ async function saveCompleteConsultation() {
       medical_conditions: patientData.history.conditions,
       last_visit: patientData.history.lastVisit,
       transcript: transcript,
+      transcript_html: transcriptHTML,
       recording_duration_seconds: transcription ? transcription.getDuration() / 1000 : 0,
       soap_subjective: document.getElementById('soap-subjective')?.textContent || '',
       soap_objective: document.getElementById('soap-objective')?.textContent || '',
