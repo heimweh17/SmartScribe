@@ -1,6 +1,6 @@
 // js/gemini-config.js
 const GEMINI_CONFIG = {
-  apiKey: 'AIzaSyBIr7WV2RTJM9-1m53YMj0tG9ssvARPLLw',
+  apiKey: 'AIzaSyDizK9rJJYixH5QES6j3KZTzP3XYtjfoRs',
   model: 'gemini-2.0-flash-exp',
   apiUrl: 'https://generativelanguage.googleapis.com/v1beta/models'
 };
