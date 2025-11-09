@@ -43,6 +43,29 @@ function displayPatientInfo() {
   }
 }
 
+// Show notification
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: white;
+    z-index: 2000;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    background: ${type === 'success' ? '#48bb78' : type === 'error' ? '#FA4616' : '#0021A5'};
+  `;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+
+  setTimeout(() => {
+    notification.remove();
+  }, 3000);
+}
+
 // ==========================================
 // TRANSCRIPTION INTEGRATION
 // ==========================================
@@ -336,50 +359,38 @@ async function saveTranscriptToBackend(transcript) {
   }
 }
 
-// Show notification
-function showNotification(message, type = 'info') {
-  const notification = document.createElement('div');
-  notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 12px 16px;
-    border-radius: 8px;
-    color: white;
-    z-index: 2000;
-    font-weight: 500;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    background: ${type === 'success' ? '#48bb78' : type === 'error' ? '#FA4616' : '#0021A5'};
-  `;
-  notification.textContent = message;
-  document.body.appendChild(notification);
-
-  setTimeout(() => {
-    notification.remove();
-  }, 3000);
-}
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('🚀 Initializing patient details page...');
-  
-  displayPatientInfo();
-  initializeTranscription();
-});
-
-// Warn before leaving if recording
-window.addEventListener('beforeunload', (e) => {
-  if (isRecording) {
-    e.preventDefault();
-    e.returnValue = 'Recording in progress. Are you sure you want to leave?';
-  }
-});
-
 // ==========================================
 // AI MEDICAL SUMMARY INTEGRATION
 // ==========================================
 
 let aiSummary = null;
+
+// Display summary - DEFINED BEFORE IT'S USED
+function displaySummary(soapNote, quickSummary) {
+  // Show container
+  document.getElementById('summary-container').style.display = 'block';
+
+  // Display SOAP sections
+  document.getElementById('soap-subjective').textContent = soapNote.subjective || 'Not documented';
+  document.getElementById('soap-objective').textContent = soapNote.objective || 'Not documented';
+  document.getElementById('soap-assessment').textContent = soapNote.assessment || 'Not documented';
+  document.getElementById('soap-plan').textContent = soapNote.plan || 'Not documented';
+
+  // Show action buttons
+  document.getElementById('copy-summary-btn').style.display = 'inline-block';
+  document.getElementById('export-summary-btn').style.display = 'inline-block';
+  document.getElementById('save-summary-btn').style.display = 'inline-block';
+}
+
+// Display recommendations - DEFINED BEFORE IT'S USED
+function displayRecommendations(recommendations) {
+  document.getElementById('rec-medications').textContent = recommendations.medications || 'None needed';
+  document.getElementById('rec-lifestyle').textContent = recommendations.lifestyle || 'None needed';
+  document.getElementById('rec-followup').textContent = recommendations.followup || 'None needed';
+  document.getElementById('rec-education').textContent = recommendations.education || 'None needed';
+  document.getElementById('rec-tests').textContent = recommendations.tests || 'None needed';
+  document.getElementById('rec-referrals').textContent = recommendations.referrals || 'None needed';
+}
 
 // Initialize AI summary system
 function initializeAISummary() {
@@ -460,13 +471,19 @@ async function generateMedicalSummary() {
     // Generate SOAP note
     const soapNote = await aiSummary.generateSummary(transcript, patientInfo);
 
-    // Generate quick summary
+    // Generate quick summary (we still generate it but don't display it)
     const quickSummary = await aiSummary.generateQuickSummary(transcript);
 
     // Display results
     displaySummary(soapNote, quickSummary);
 
-    showNotification('✅ Summary generated successfully', 'success');
+    // Generate and display recommendations
+    document.getElementById('recommendations-status').textContent = 'Generating...';
+    const recommendations = await aiSummary.generateRecommendations(transcript, soapNote, patientInfo);
+    displayRecommendations(recommendations);
+    document.getElementById('recommendations-status').textContent = '';
+
+    showNotification('✅ Summary and recommendations generated', 'success');
     document.getElementById('ai-status').textContent = 'Ready';
 
   } catch (error) {
@@ -477,26 +494,6 @@ async function generateMedicalSummary() {
     document.getElementById('generate-summary-btn').disabled = false;
     document.getElementById('summary-loading').style.display = 'none';
   }
-}
-
-// Display summary
-function displaySummary(soapNote, quickSummary) {
-  // Show container
-  document.getElementById('summary-container').style.display = 'block';
-
-  // Display quick summary
-  document.getElementById('quick-summary').textContent = quickSummary;
-
-  // Display SOAP sections
-  document.getElementById('soap-subjective').textContent = soapNote.subjective || 'Not documented';
-  document.getElementById('soap-objective').textContent = soapNote.objective || 'Not documented';
-  document.getElementById('soap-assessment').textContent = soapNote.assessment || 'Not documented';
-  document.getElementById('soap-plan').textContent = soapNote.plan || 'Not documented';
-
-  // Show action buttons
-  document.getElementById('copy-summary-btn').style.display = 'inline-block';
-  document.getElementById('export-summary-btn').style.display = 'inline-block';
-  document.getElementById('save-summary-btn').style.display = 'inline-block';
 }
 
 // Copy summary to clipboard
@@ -601,11 +598,23 @@ async function saveSummaryToChart() {
   }
 }
 
-// Update the DOMContentLoaded event
+// ==========================================
+// INITIALIZATION
+// ==========================================
+
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   console.log('🚀 Initializing patient details page...');
   
   displayPatientInfo();
   initializeTranscription();
-  initializeAISummary(); // Add this line
+  initializeAISummary();
+});
+
+// Warn before leaving if recording
+window.addEventListener('beforeunload', (e) => {
+  if (isRecording) {
+    e.preventDefault();
+    e.returnValue = 'Recording in progress. Are you sure you want to leave?';
+  }
 });

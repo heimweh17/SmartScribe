@@ -117,7 +117,7 @@ PLAN:
         }
       ],
       generationConfig: {
-        temperature: 0.2, // Lower temperature for more consistent medical documentation
+        temperature: 0.2,
         topK: 40,
         topP: 0.95,
         maxOutputTokens: 2048,
@@ -210,6 +210,104 @@ Provide a brief, professional medical summary.`;
 
     const summary = await this.callGeminiAPI(prompt);
     return summary;
+  }
+
+  /**
+ * Generate clinical recommendations from transcript and SOAP note
+ * @param {Array} transcript - Conversation transcript
+ * @param {Object} soapNote - Generated SOAP note
+ * @param {Object} patientInfo - Patient information
+ * @returns {Promise<Object>} - Clinical recommendations
+ */
+async generateRecommendations(transcript, soapNote, patientInfo = {}) {
+  const conversationText = this.formatTranscript(transcript);
+  
+  const prompt = `You are a clinical decision support assistant. Based on the following doctor-patient conversation and SOAP note, provide evidence-based clinical recommendations for the physician.
+
+**Patient Information:**
+- Name: ${patientInfo.name || 'Not provided'}
+- MRN: ${patientInfo.mrn || 'Not provided'}
+- Date: ${new Date().toLocaleDateString()}
+
+**Conversation Transcript:**
+${conversationText}
+
+**SOAP Note:**
+SUBJECTIVE: ${soapNote.subjective}
+OBJECTIVE: ${soapNote.objective}
+ASSESSMENT: ${soapNote.assessment}
+PLAN: ${soapNote.plan}
+
+**Instructions:**
+Provide BRIEF, actionable clinical recommendations (1-2 sentences MAXIMUM per category) that the doctor can quickly glance at and communicate to the patient.
+
+1. **Medications**: Specific medication with dosage (e.g., "Lisinopril 10mg daily for blood pressure control")
+2. **Lifestyle**: One key lifestyle change (e.g., "30 minutes walking daily, reduce sodium intake")
+3. **Follow-up**: When to return (e.g., "Schedule follow-up in 3 months")
+4. **Patient Education**: Main teaching point (e.g., "Explain importance of medication adherence")
+5. **Diagnostic Tests**: Essential tests only (e.g., "Order lipid panel and HbA1c")
+6. **Referrals**: Specialist if needed (e.g., "Refer to cardiologist if BP remains elevated")
+
+**Guidelines:**
+- Keep each recommendation to 1-2 sentences MAXIMUM
+- Be specific and actionable
+- Base recommendations ONLY on conversation content
+- If a category doesn't apply, write "None needed"
+- Use simple, clear language the doctor can quickly read to the patient
+
+**Format your response exactly as:**
+
+MEDICATIONS:
+[One specific medication recommendation - 1 sentence]
+
+LIFESTYLE MODIFICATIONS:
+[One key lifestyle change - 1 sentence]
+
+FOLLOW-UP:
+[When to return - 1 sentence]
+
+PATIENT EDUCATION:
+[Main teaching point - 1 sentence]
+
+DIAGNOSTIC TESTS:
+[Essential tests - 1 sentence]
+
+REFERRALS:
+[Specialist referral - 1 sentence]`;
+
+  const recommendations = await this.callGeminiAPI(prompt);
+  return this.parseRecommendations(recommendations);
+}
+
+  /**
+   * Parse recommendations from AI response
+   */
+  parseRecommendations(text) {
+    const sections = {
+      medications: '',
+      lifestyle: '',
+      followup: '',
+      education: '',
+      tests: '',
+      referrals: ''
+    };
+
+    // Extract each section
+    const medicationsMatch = text.match(/MEDICATIONS:?\s*([\s\S]*?)(?=LIFESTYLE MODIFICATIONS:|$)/i);
+    const lifestyleMatch = text.match(/LIFESTYLE MODIFICATIONS:?\s*([\s\S]*?)(?=FOLLOW-UP:|$)/i);
+    const followupMatch = text.match(/FOLLOW-UP:?\s*([\s\S]*?)(?=PATIENT EDUCATION:|$)/i);
+    const educationMatch = text.match(/PATIENT EDUCATION:?\s*([\s\S]*?)(?=DIAGNOSTIC TESTS:|$)/i);
+    const testsMatch = text.match(/DIAGNOSTIC TESTS:?\s*([\s\S]*?)(?=REFERRALS:|$)/i);
+    const referralsMatch = text.match(/REFERRALS:?\s*([\s\S]*?)$/i);
+
+    if (medicationsMatch) sections.medications = medicationsMatch[1].trim();
+    if (lifestyleMatch) sections.lifestyle = lifestyleMatch[1].trim();
+    if (followupMatch) sections.followup = followupMatch[1].trim();
+    if (educationMatch) sections.education = educationMatch[1].trim();
+    if (testsMatch) sections.tests = testsMatch[1].trim();
+    if (referralsMatch) sections.referrals = referralsMatch[1].trim();
+
+    return sections;
   }
 
   /**
