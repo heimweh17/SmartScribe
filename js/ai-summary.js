@@ -213,6 +213,61 @@ Provide a brief, professional medical summary.`;
   }
 
   /**
+   * Extract structured sidebar data (demographics, vitals, meds, problems) from transcript
+   * Returns a JS object with keys: demographics, chief_complaint, vitals, allergies, medications, active_problems, care_gaps
+   */
+  async generateSidebarData(transcript, patientInfo = {}) {
+    const conversationText = this.formatTranscript(transcript);
+
+    const prompt = `You are a clinical extraction assistant. From the following doctor-patient conversation, extract structured patient sidebar data in JSON only. Return a single valid JSON object with the following fields:
+{
+  "demographics": { "name": "", "mrn": "", "dob": "YYYY-MM-DD" or null, "age": number or null, "gender": "Male|Female|Other|Unknown" },
+  "chief_complaint": "short phrase or sentence or empty string",
+  "vitals": { "bp_systolic": number or null, "bp_diastolic": number or null, "heart_rate": number or null, "temperature": number or null, "temperature_unit": "F|C|" , "o2_saturation": number or null },
+  "allergies": ["allergy 1", "allergy 2"],
+  "medications": ["med1 dose", "med2 dose"],
+  "active_problems": [{"condition":"","status":"urgent|monitor|stable|" , "notes":""}],
+  "care_gaps": [{"issue":"","severity":"urgent|warning|info","due_date":"YYYY-MM-DD"}],
+  "suggested_icd10": ["I10","E11.9"]
+}
+
+Patient info: ${JSON.stringify(patientInfo)}
+
+Conversation:
+${conversationText}
+
+Instructions:
+1) Only return JSON, nothing else.
+2) If a value is not present, use null or an empty array as appropriate.
+3) Keep text succinct.
+4) Dates should use ISO YYYY-MM-DD when possible.`;
+
+    const aiText = await this.callGeminiAPI(prompt);
+
+    // Try to extract JSON from the response
+    try {
+      // Some LLMs may wrap JSON in markdown or text; attempt to find the first {..}
+      const jsonMatch = aiText.match(/\{[\s\S]*\}$/);
+      const jsonStr = jsonMatch ? jsonMatch[0] : aiText;
+      const parsed = JSON.parse(jsonStr);
+      return parsed;
+    } catch (err) {
+      // If parsing fails, return a safe fallback
+      console.warn('Failed to parse sidebar JSON from AI response', err);
+      return {
+        demographics: { name: patientInfo.name || null, mrn: patientInfo.mrn || null, dob: null, age: null, gender: 'Unknown' },
+        chief_complaint: '',
+        vitals: { bp_systolic: null, bp_diastolic: null, heart_rate: null, temperature: null, temperature_unit: '', o2_saturation: null },
+        allergies: [],
+        medications: [],
+        active_problems: [],
+        care_gaps: [],
+        suggested_icd10: []
+      };
+    }
+  }
+
+  /**
  * Generate clinical recommendations from transcript and SOAP note
  * @param {Array} transcript - Conversation transcript
  * @param {Object} soapNote - Generated SOAP note
