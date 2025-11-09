@@ -298,7 +298,210 @@ body {
     font-size: 1.125rem;
     color: #93c5fd;
 }
+/* Add Patient Button Styles */
+.add-patient-center-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 0;
+}
 
+.add-patient-bottom-container {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.add-patient-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: #FA4616;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(250, 70, 22, 0.3);
+  font-family: inherit;
+}
+
+.add-patient-btn:hover {
+  background: #FF6A3D;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(250, 70, 22, 0.4);
+}
+
+.add-patient-btn svg {
+  flex-shrink: 0;
+}
+/* Modal Overlay - Dark background that covers the screen */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Modal Content - The white popup box */
+.modal-content {
+  background: #1F3666;
+  border: 1px solid rgba(59, 92, 184, 0.3);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Modal Header */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(59, 92, 184, 0.3);
+}
+
+.modal-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #E7ECF5;
+  margin: 0;
+}
+
+/* Close Button */
+.modal-close {
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+  color: #FA4616;
+}
+
+/* Modal Form */
+.modal-form {
+  padding: 20px;
+}
+
+/* Form Group */
+.form-group-modal {
+  margin-bottom: 16px;
+}
+
+.form-group-modal label {
+  display: block;
+  color: #D6E6FF;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.form-group-modal input {
+  width: 100%;
+  background: rgba(15, 33, 69, 0.6);
+  border: 1px solid rgba(59, 92, 184, 0.3);
+  color: #E7ECF5;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.form-group-modal input:focus {
+  border-color: #FA4616;
+  outline: none;
+}
+
+.form-group-modal input::placeholder {
+  color: #94A3B8;
+}
+
+/* Info Box */
+.form-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(20, 184, 166, 0.1);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.form-info svg {
+  color: #5EEAD4;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.form-info span {
+  color: #94A3B8;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+/* Buttons */
+.btn-primary {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  font-family: inherit;
+  background: #FA4616;
+  color: #fff;
+  transition: background 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: #FF6A3D;
+}
+
+.btn-secondary {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(59, 92, 184, 0.3);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  font-family: inherit;
+  background: transparent;
+  color: #D6E6FF;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  border-color: #FA4616;
+  color: #FA4616;
+}
 /* Responsive Design */
 @media (max-width: 768px) {
     .content-header {
