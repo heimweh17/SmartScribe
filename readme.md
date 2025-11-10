@@ -116,7 +116,7 @@ The app will not run without your keys.
 
 | File | Consultation |
 |----------|-------------|
-| ![](Screenshot 2025-11-09 105045.png) | ![](Screenshot 2025-11-09 105045.png) |
+| ![](pic2.png) | ![](pic1.png) |
 
 ---
 ## Deployment Status
