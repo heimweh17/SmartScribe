@@ -3,7 +3,7 @@
 
 const DEEPGRAM_CONFIG = {
   // Replace with your actual Deepgram API key
-  apiKey: '30144dbf68fc36dcfa46cb9aa55c06168e4a5659',
+  apiKey: '<your-api-key>',
 
   // API endpoint
   apiUrl: 'https://api.deepgram.com/v1/listen',
